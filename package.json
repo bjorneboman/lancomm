@@ -1,0 +1,13 @@
+{
+  "name": "ptt-signaling-server",
+  "version": "1.0.0",
+  "description": "WebSocket signaling server for a LAN push-to-talk app",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
