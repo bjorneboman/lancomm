@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>House Comm</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #111;
+      color: #eee;
+    }
+    #status { margin-bottom: 2rem; opacity: 0.7; }
+    #ptt {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: none;
+      background: #2a6;
+      color: white;
+      font-size: 1.1rem;
+      user-select: none;
+      touch-action: none;
+    }
+    #ptt:active { background: #c33; }
+  </style>
+</head>
+<body>
+  <div id="status">Connecting…</div>
+  <button id="ptt">🎙️ Hold to talk</button>
+  <script src="client.js"></script>
+</body>
+</html>
