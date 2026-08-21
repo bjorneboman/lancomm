@@ -44,6 +44,10 @@ ws.onmessage = async (event) => {
     case "ice-candidate":
       await handleIceCandidate(msg.fromId, msg.payload);
       break;
+
+    case "ping":
+      playPingSound();
+      break;
   }
 };
 
@@ -122,6 +126,32 @@ function setStatus(text) {
   statusEl.textContent = text;
 }
 
+// --- Ping ---
+// A lightweight "hey, got a sec?" signal — no audio stream involved,
+// just a short tone generated on the receiving end.
+function playPingSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.frequency.value = 880;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.3);
+}
+
+function sendPing() {
+  for (const peerId of peerConnections.keys()) {
+    send({ type: "ping", targetId: peerId });
+  }
+  playPingSound()
+}
+
 // On iOS, audio elements created automatically (not from a direct tap)
 // may be blocked from playing. Any tap on the PTT button "unlocks"
 // playback for all current audio elements for the rest of the session.
@@ -154,3 +184,6 @@ pttButton.addEventListener("touchend", (e) => {
   e.preventDefault();
   setTalking(false);
 });
+
+const pingButton = document.getElementById("ping");
+pingButton.addEventListener("click", sendPing);

@@ -1,11 +1,12 @@
 // messageHandler.js
 // Routes signaling messages between clients. Never touches audio —
-// just forwards JSON envelopes so peers can set up a direct WebRTC link.
+// just forwards JSON envelopes so peers can set up a direct WebRTC link
+// (or, for "ping", just a lightweight attention signal).
 
 import { peersInRoom, getClientById } from "./rooms.js";
 
 // Expected message shape from clients:
-// { type: "offer" | "answer" | "ice-candidate" | "who-is-here", targetId?, payload? }
+// { type: "offer" | "answer" | "ice-candidate" | "who-is-here" | "ping", targetId?, payload? }
 
 export function handleMessage(client, raw) {
   let msg;
@@ -25,8 +26,10 @@ export function handleMessage(client, raw) {
 
     case "offer":
     case "answer":
-    case "ice-candidate": {
-      // Relay directly to the intended peer, tagging it with who sent it
+    case "ice-candidate":
+    case "ping": {
+      // Relay directly to the intended peer, tagging it with who sent it.
+      // "ping" carries no payload — it's just a nudge.
       const target = getClientById(client.roomId, msg.targetId);
       if (!target) return;
 
