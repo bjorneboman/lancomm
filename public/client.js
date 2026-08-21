@@ -76,9 +76,15 @@ async function connectToPeer(peerId, isInitiator) {
       audioEl = document.createElement("audio");
       audioEl.id = `audio-${peerId}`;
       audioEl.autoplay = true;
+      audioEl.playsInline = true; // required on iOS to avoid fullscreen takeover
       document.body.appendChild(audioEl);
     }
     audioEl.srcObject = e.streams[0];
+    // iOS Safari blocks autoplay unless tied to a user gesture — try now,
+    // and we also retry on the next PTT tap (see unlockAudioPlayback below)
+    audioEl.play().catch(() => {
+      /* will retry on next user tap via unlockAudioPlayback() */
+    });
   };
 
   if (isInitiator) {
@@ -116,6 +122,15 @@ function setStatus(text) {
   statusEl.textContent = text;
 }
 
+// On iOS, audio elements created automatically (not from a direct tap)
+// may be blocked from playing. Any tap on the PTT button "unlocks"
+// playback for all current audio elements for the rest of the session.
+function unlockAudioPlayback() {
+  document.querySelectorAll("audio").forEach((el) => {
+    el.play().catch(() => {});
+  });
+}
+
 // --- Push to talk ---
 // Mouse/touch hold = talk. Works for both desktop testing and phones.
 function setTalking(isTalking) {
@@ -124,11 +139,15 @@ function setTalking(isTalking) {
   pttButton.textContent = isTalking ? "🔴 Talking…" : "🎙️ Hold to talk";
 }
 
-pttButton.addEventListener("mousedown", () => setTalking(true));
+pttButton.addEventListener("mousedown", () => {
+  unlockAudioPlayback();
+  setTalking(true);
+});
 pttButton.addEventListener("mouseup", () => setTalking(false));
 pttButton.addEventListener("mouseleave", () => setTalking(false));
 pttButton.addEventListener("touchstart", (e) => {
   e.preventDefault();
+  unlockAudioPlayback();
   setTalking(true);
 });
 pttButton.addEventListener("touchend", (e) => {
